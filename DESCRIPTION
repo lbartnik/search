@@ -1,0 +1,29 @@
+Package: reflection
+Type: Package
+Title: Reflect the History of an Artifact
+Version: 0.1.0
+Authors@R: person("Lukasz", "Bartnik", email = "l.bartnik@gmail.com", role = c("aut", "cre"))
+Description: Matches the contents of a file against a repository of
+    artifacts. Provides the context in which the while was created.
+License: GPL v3
+URL: https://github.com/lbartnik/reflection
+BugReports: https://github.com/lbartnik/reflection/issues
+Encoding: UTF-8
+Imports:
+    glue,
+    repository,
+    rlang,
+    utilities
+Suggests:
+  knitr,
+  testthat
+Collate:
+  'identify.R'
+  'images.R'
+  'reflection.R'
+Remotes:
+  lbartnik/repository,
+  lbartnik/utilities
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1
+Roxygen: list(markdown = TRUE)
