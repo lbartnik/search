@@ -35,7 +35,7 @@ dispatch_file <- function (path) {
   ext <- tolower(file_ext(path))
 
   method <- "identify_file_impl"
-  exts <- substr(ls(pattern = method, envir = asNamespace("reflection")), nchar(method)+2, 0xBEEF)
+  exts <- substr(ls(pattern = method, envir = asNamespace("search")), nchar(method)+2, 0xBEEF)
   exts <- setdiff(exts, c("default", "")) # remove the main method and the default dispatch
 
   if (ext %nin% exts) {

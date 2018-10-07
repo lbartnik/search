@@ -1,4 +1,4 @@
-Package: reflection
+Package: search
 Type: Package
 Title: Reflect the History of an Artifact
 Version: 0.1.0
@@ -6,8 +6,8 @@ Authors@R: person("Lukasz", "Bartnik", email = "l.bartnik@gmail.com", role = c("
 Description: Matches the contents of a file against a repository of
     artifacts. Provides the context in which the while was created.
 License: GPL v3
-URL: https://github.com/lbartnik/reflection
-BugReports: https://github.com/lbartnik/reflection/issues
+URL: https://github.com/lbartnik/search
+BugReports: https://github.com/lbartnik/search/issues
 Encoding: UTF-8
 Imports:
     glue,
@@ -20,7 +20,7 @@ Suggests:
 Collate:
   'identify.R'
   'images.R'
-  'reflection.R'
+  'search.R'
 Remotes:
   lbartnik/repository,
   lbartnik/utilities

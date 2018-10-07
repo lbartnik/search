@@ -1,7 +1,7 @@
-#' @useDynLib reflection, .registration = TRUE
+#' @useDynLib search, .registration = TRUE
 NULL
 
-#' @name reflection
+#' @name search 
 #' @title Reflect the History of an Artifact
 #' @description Matches the contents of a file against a repository of
 #' artifacts. Provides the context in which the while was created.

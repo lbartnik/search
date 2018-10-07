@@ -1,4 +1,4 @@
 library(testthat)
-library(reflection)
+library(search)
 
-test_check("reflection")
+test_check("search")
