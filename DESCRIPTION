@@ -11,6 +11,7 @@ BugReports: https://github.com/lbartnik/search/issues
 Encoding: UTF-8
 Imports:
     glue,
+    imager,
     repository,
     rlang,
     utilities

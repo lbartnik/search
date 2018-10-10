@@ -37,3 +37,26 @@ test_that("custom missing", {
     expect_equal(unwrap_array(inp, missing = 1000), exp)
   })
 })
+
+test_that("cdf diff", {
+  expect_equal(cdf_diff(0, 0), 0)
+  expect_equal(cdf_diff(1, 0), 1)
+  expect_equal(cdf_diff(1, 1), 0)
+
+  expect_equal(cdf_diff(1:2, 0), 1.5)
+  expect_equal(cdf_diff(c(1, 3), 2), 1)
+  expect_equal(cdf_diff(c(1, 3), c(2, 4)), 1)
+})
+
+test_that("cdf vs ecdf", {
+  # two samples of 10 points each
+  x <- exp(-(1:10/10))
+  y <- 3*sin(1:10/10)
+
+  # ecdf-based computation
+  X <- sort(c(x, y))
+  X <- c(min(X), X)
+  exp <- sum(abs(ecdf(x)(X)-ecdf(y)(X)) * c(diff(X), 10))
+
+  expect_equal(cdf_diff(x, y), exp)
+})

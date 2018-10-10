@@ -38,3 +38,6 @@ rsconnect/
 # C/C++
 *.o
 *.so
+
+# knitr
+vignettes/compimg_cache/

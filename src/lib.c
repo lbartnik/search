@@ -6,12 +6,16 @@
 #include <R_ext/Rdynload.h>
 
 #include <assert.h>
+#include <math.h>
 
 SEXP C_unwrap_array (SEXP _array, SEXP _dAlpha, SEXP _rMax, SEXP _dR, SEXP _missing);
+SEXP C_cdf_diff (SEXP _x, SEXP _y);
 static int is_single_numeric(SEXP _obj);
+static int is_numeric (SEXP _obj);
 
 static const R_CallMethodDef callMethods[]  = {
   { "C_unwrap_array", (DL_FUNC) &C_unwrap_array, 5 },
+  { "C_cdf_diff",     (DL_FUNC) &C_cdf_diff, 2 },
   { NULL, NULL, 0 }
 };
 
@@ -87,7 +91,68 @@ SEXP C_unwrap_array (SEXP _array, SEXP _dAlpha, SEXP _rMax, SEXP _dR, SEXP _miss
   return ans;
 }
 
+SEXP C_cdf_diff (SEXP _x, SEXP _y) {
+  if (!is_numeric(_x)) {
+    Rf_error("`_x` needs to be a sorted numeric vector");
+  }
+  if (!is_numeric(_y)) {
+    Rf_error("`_y` needs to be a sorted numeric vector");
+  }
+
+  int lx = LENGTH(_x), ly = LENGTH(_y);
+  double * x = NUMERIC_DATA(_x), * y = NUMERIC_DATA(_y);
+  double * px = x, * py = y, * ex = x+lx, * ey = y+ly,
+           vx = 0, vy = 0, diff = 0;
+  double cx = *px < *py ? *px : *py;
+
+#define DEBUG_PRINT do { printf("cx=%f d=%f x=%f y=%f vx=%f vy=%f\n", cx, diff, *px, *py, vx, vy); } while (0);
+
+  #define DO_X do {                                              \
+    diff += (*px - cx) * fabs(vx - vy);                          \
+    cx = *px;                                                    \
+    ++px;                                                        \
+    vx += 1.0/lx;                                                \
+  } while (0);                                                   \
+
+  #define DO_Y do {                                              \
+    diff += (*py - cx) * fabs(vx - vy);                          \
+    cx = *py;                                                    \
+    ++py;                                                        \
+    vy += 1.0/ly;                                                \
+  } while (0);                                                   \
+
+  while (px < ex || py < ey) {
+    // 1. find the next point to measure cdf against: either px or py
+    // 2. delta is the area between this new point and values of both cdfs
+    if (py == ey) {
+      DO_X;
+      continue;
+    }
+    if (px == ex) {
+      DO_Y;
+      continue;
+    }
+
+    if (*px < *py) {
+      DO_X;
+    } else {
+      DO_Y;
+    }
+  }
+
+  SEXP ans = PROTECT(NEW_NUMERIC(1));
+  NUMERIC_DATA(ans)[0] = diff;
+
+  UNPROTECT(1);
+  return ans;
+}
+
+
 
 static int is_single_numeric (SEXP _obj) {
   return isReal(_obj) && (LENGTH(_obj) == 1);
+}
+
+static int is_numeric (SEXP _obj) {
+  return isReal(_obj);
 }

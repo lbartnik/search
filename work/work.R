@@ -3,75 +3,99 @@ library(repository)
 library(utilities)
 library(imager)
 library(glue)
+library(ggplot2)
+library(tibble)
 devtools::load_all(".")
 
 if (FALSE) {
-  aid <- '0f1105f2e5992669196384b0a66536ef7dfc4111'
-  as_artifacts(sample_repository()) %>% filter(id == aid) %>% read_artifacts %>% first
-}
-
-
-if (FALSE) {
-  a <- array(as.double(1:9), c(3, 3))
-  a
-  reflection:::unwrap_array(a)
-
-  o <- unwrap_image(load.image("tests/testthat/roc.png"), 0.01, 1)
-
   r <- sample_repository()
-  p1 <- unwrap_image(load_plot('0f1105f2e5992669196384b0a66536ef7dfc4111')$image, 0.01, 1)
-  p2 <- unwrap_image(load_plot('909a1c6d8e6fc025fe34f8ed33f908889a6a108d')$image, 0.01, 1)
-
-  o <- crop.bbox(o, bbox(o < .95))
-  p1 <- crop.bbox(p1, bbox(p1 < .95))
-  p2 <- crop.bbox(p2, bbox(p2 < .95))
-
-  w <- max(unlist(lapply(list(o, p1, p2), function (p) dim(p)[1])))
-  h <- max(unlist(lapply(list(o, p1, p2), function (p) dim(p)[2])))
-
-  imgs <- lapply(list(o, p1, p2), function(p) resize(p, w, h))
-
-  arrays <- lapply(imgs, function (x) isoblur(x, sigma = 5) %>% as.array %>% as.numeric)
-  cor(arrays[[1]], arrays[[2]])
-  cor(arrays[[1]], arrays[[3]])
-}
-
-load_array <- function (path) {
-  a <- as.array(squeeze(grayscale(load.image(path))))
-  unwrap_array(a, 0.01, 1, missing = 1)
+  a <- as_artifacts(r) %>% filter(id == '0f1105f2e5992669196384b0a66536ef7dfc4111') %>% read_artifacts %>% first
+  d <- artifact_data(a)
 }
 
 if (FALSE) {
+  x <- unwrap_image(load.image("tests/testthat/roc.png"), 0.01, 1)
+
   r <- sample_repository()
+  a <- unwrap_image(load_plot(r, '0f1105f2e5992669196384b0a66536ef7dfc4111')$image, 0.01, 1)
+  b <- unwrap_image(load_plot(r, '909a1c6d8e6fc025fe34f8ed33f908889a6a108d')$image, 0.01, 1)
 
-  o <- load_array("tests/testthat/roc.png")
-  p1 <- load_array('work/p1.png')
-  p2 <- load_array('work/p2.png')
+  s <- london_meters()
+  c <- unwrap_image(load_plot(s, '14e3598b1c58f1f48b74aab35d6c39183568286f')$image, 0.01, 1)
+  d <- unwrap_image(load_plot(s, '539d7b916fd845319be242640085b59dbcf52506')$image, 0.01, 1)
+  e <- unwrap_image(load_plot(s, '70f3c0a43d894b3cd0d678ef2acbb96f9a5c679e')$image, 0.01, 1)
+  f <- unwrap_image(load_plot(s, 'ba5bb30555c5fba63655cb73b5d08bd074997550')$image, 0.01, 1)
+  g <- unwrap_image(load_plot(s, 'd0fe8d94550be6fdbe370b88cef5bb7f1f9c4676')$image, 0.01, 1)
+  h <- unwrap_image(load_plot(s, 'fb79a00868474d6371201271065cd30877e65d03')$image, 0.01, 1)
 
-  cor(as.numeric(o), as.numeric(p1))
+  imgs <- list(x, a, b, c, d, e, f, g, h)
+  dists <- combn(imgs, 2, function(pair) compare_images(first(pair), second(pair)))
+  distm <- matrix(NA, length(imgs), length(imgs))
+  apply(rbind(combn(seq(length(imgs)), 2), dists), 2, function (x) {
+    distm[x[1], x[2]] <<- x[3]
+  })
+
+
+  compare_imgs(x, a)
+  compare_imgs(x, b)
+  compare_imgs(x, c)
+
+  as_dist_vec(x, c) %>% as.tibble %>% ggplot(aes(x = a, y = b)) +
+    geom_count(aes(alpha = ..prop..))
+
+  edge_diff(x, a)
+  edge_diff(x, b)
+  edge_diff(x, c)
+  edge_diff(x, d)
+  edge_diff(x, e)
+  edge_diff(x, f)
+  edge_diff(x, g)
+  edge_diff(x, h)
+
+  edge_diff(d, f)
+  edge_diff(d, g)
+  edge_diff(c, e)
 }
-
 
 if (FALSE) {
-  r <- sample_repository()
-
-  roc_plot <- load.image("tests/testthat/roc.png")
-  plot_1 <- load_plot('0f1105f2e5992669196384b0a66536ef7dfc4111')$image
-  plot_2 <- load_plot('909a1c6d8e6fc025fe34f8ed33f908889a6a108d')$image
-
-  # 0.156828
-  compare_plots(roc_plot, plot_1)
-  # 0.1568029
-  compare_plots(roc_plot, plot_2)
-
-  display(roc_plot)
-  display(plot_1)
-  display(plot_2)
+  s <- london_meters()
+  as_artifacts(s) %>% filter('plot' %in% class) %>% read_artifacts %>% lapply(function (a) {
+    file.copy(load_plot(s, a$id)$path, file.path('work', paste0(storage::shorten(a$id), '.png')))
+  })
 }
 
-# dim(x)[1], dim(x)[2]
-load_plot <- function (art_id, svg = FALSE, width = NULL, height = NULL) {
-  d <- as_artifacts(r) %>% filter(id == art_id) %>% read_artifacts %>% first %>% artifact_data
+
+compare_imgs <- function (a, b) {
+  dv <- as_dist_vec(a, b)
+  cor(dv$a, dv$b, use = 'complete.obs', method = 'spearman')
+}
+
+as_dist_vec <- function (a, b) {
+  matched <- mapply(a = to_distances(a), b = to_distances(b), FUN = function (a, b) {
+    dl <- length(a) - length(b)
+    if (dl < 0) {
+      a <- c(a, rep(0, -dl))
+    } else if (dl > 0) {
+      b <- c(b, rep(0, dl))
+    }
+    list(a = a, b = b)
+  }, SIMPLIFY = FALSE)
+  a <- unlist(lapply(matched, `[[`, i = 'a'))
+  b <- unlist(lapply(matched, `[[`, i = 'b'))
+  list(a = a, b = b)
+}
+
+to_distances <- function (img, threshold = .95) {
+  img <- crop.bbox(img, bbox(img < threshold))
+  a <- as.array(img)
+  apply(a, 1, function (c) {
+    which(c < .95) / length(c)
+  })
+}
+
+
+load_plot <- function (repo, art_id, svg = FALSE, width = NULL, height = NULL) {
+  d <- as_artifacts(repo) %>% filter(id == art_id) %>% read_artifacts %>% first %>% artifact_data
   p <- tempfile(fileext = '.png')
 
   if (svg) {
@@ -85,107 +109,27 @@ load_plot <- function (art_id, svg = FALSE, width = NULL, height = NULL) {
   list(image = load.image(p), path = p)
 }
 
-compare_plots <- function (p1, p2) {
-  width <- max(dim(p1)[1], dim(p2)[1])
-  height <- max(dim(p1)[2], dim(p2)[2])
 
-  p1 <- resize(p1, width, height)
-  p2 <- resize(p2, width, height)
 
-  sqrt(mean(as.numeric(as.array(p1) - as.array(p2))**2))
+ecdf_diff <- function (a, b) {
+  diffs <- mapply(a = to_distances(a), b = to_distances(b), FUN = function (a, b) {
+    x <- c(0, seq(min(a, b), max(a, b), length.out = 5))
+    dx <- c(diff(x), 1 - max(a, b))
+    sum(abs(ecdf(a)(x) - ecdf(b)(x)) * dx)
+  }, SIMPLIFY = FALSE)
+  sum(unlist(diffs))
 }
 
 
-as_polar <- function (im) {
-  width <- dim(im)[1]
-  height <- dim(im)[2]
-
-  R <- as.integer(max(width, height)/2)
-  polar <- imfill(360, R, val = 0)
-
-  im <- grayscale(im)
-  for (alpha in seq(1, 360)) {
-    cos_alpha <- cos(alpha/180*pi)
-    sin_alpha <- sin(alpha/180*pi)
-    for (r in seq(R)) {
-      x <- as.integer(width/2 + cos_alpha * r)
-      y <- as.integer(height/2 + sin_alpha * r)
-      if (x > 0 && x <= width && y > 0 && y <= height) {
-        #cat(glue("{alpha},{r} <- {x},{y}"), '\n')
-        at(polar, alpha, r) <- at(im, x, y)
-      }
-    }
-    cat(glue("{alpha}\n"), '\n')
+edge_diff <- function (a, b) {
+  to_distances <- function (x) {
+    x <- suppressWarnings(imgradient(x, "xy") %>% enorm %>% grayscale %>% squeeze %>% as.array)
+    apply(x > quantile(as.numeric(x), .5), 1, function (c) which(c)/length(c))
   }
-
-  polar
+  diffs <- mapply(a = to_distances(a), b = to_distances(b), FUN = function (a, b) {
+    x <- c(0, seq(min(a, b), max(a, b), length.out = length(a)+length(b)))
+    dx <- c(diff(x), 1 - max(a, b))
+    sum(abs(ecdf(a)(x) - ecdf(b)(x)) * dx)
+  }, SIMPLIFY = FALSE)
+  sum(unlist(diffs))
 }
-
-if (FALSE) {
-  roc_plot <- load.image("tests/testthat/roc.png")
-  plot_1 <- load_plot('0f1105f2e5992669196384b0a66536ef7dfc4111')$image
-  plot_2 <- load_plot('909a1c6d8e6fc025fe34f8ed33f908889a6a108d')$image
-
-  roc_plot <- grayscale(roc_plot)
-  plot_1 <- grayscale(plot_1)
-  plot_2 <- grayscale(plot_2)
-
-  edge_roc <- cannyEdges(roc_plot)
-  edge_plot1 <- cannyEdges(plot_1)
-  edge_plot2 <- cannyEdges(plot_2)
-
-  lev_roc <- roc_plot < .95
-  lev_plot_1 <- plot_1 < .95
-  lev_plot_2 <- plot_2 < .95
-  #  plot(roc_plot)
-#  highlight(edge_roc)
-
-  bound_roc <- boundary(edge_roc)
-  bound_plot1 <- boundary(edge_plot1)
-  bound_plot2 <- boundary(edge_plot2)
-
-  polar_roc <- as_polar(bound_roc)
-  polar_plot1 <- as_polar(bound_plot1)
-  polar_plot2 <- as_polar(bound_plot2)
-
-  lev_polar_roc <- as_polar(lev_roc)
-  lev_polar_plot1 <- as_polar(lev_plot_1)
-  lev_polar_plot2 <- as_polar(lev_plot_2)
-
-  display(polar_roc)
-  display(polar_plot1)
-  display(polar_plot2)
-
-  a <- as.array(squeeze(polar_roc))
-  p1 <- as.array(squeeze(polar_plot1))
-  p2 <- as.array(squeeze(polar_plot2))
-
-  compare_cor(a, p1)
-  compare_cor(a, p2)
-
-  compare_cor(as.array(squeeze(lev_polar_roc)), as.array(squeeze(lev_polar_plot1)))
-  compare_cor(as.array(squeeze(lev_polar_roc)), as.array(squeeze(lev_polar_plot2)))
-}
-
-compare_cor <- function (a, b) {
-  vec <- lapply(seq(360), function (alpha) {
-    x <- which(a[alpha,] > 0)/(dim(a)[2])
-    y <- which(b[alpha,] > 0)/(dim(b)[2])
-    if (length(x) < length(y)) {
-      x <- c(x, rep(NA, length(y) - length(x)))
-    }
-    else if (length(x) > length(y)) {
-      y <- c(y, rep(NA, length(x) - length(y)))
-    }
-    list(x = x, y = y)
-  })
-
-  x <- unlist(lapply(vec, `[[`, i = 'x'))
-  y <- unlist(lapply(vec, `[[`, i = 'y'))
-
-  list(
-    cor(x, y, use = "pairwise.complete.obs"),
-    cor(x, y, use = "pairwise.complete.obs", method = "spearman")
-  )
-}
-
