@@ -1,25 +1,8 @@
-#' @importFrom rlang UQ
-#' @export
-identify_object <- function (obj, repo) {
-  id <- storage::compute_id(obj)
-  q  <- as_artifacts(repo) %>% filter(id == UQ(id))
-
-  ans <- q %>% summarise(n = n()) %>% first
-
-  if (!ans) {
-    warn("cannot match object in repository")
-    return(NULL)
-  }
-
-  read_artifacts(q)
-}
-
-
 #' @export
 identify_file <- function (path, repo) {
   stopifnot(file.exists(path))
 
-  file <- dispatch_file(path)
+  file <- new_file(path)
   identify_file_impl(file, repo)
 
   # TODO check file type
@@ -31,7 +14,7 @@ identify_file <- function (path, repo) {
 
 
 #' @importFrom tools file_ext
-dispatch_file <- function (path) {
+new_file <- function (path) {
   ext <- tolower(file_ext(path))
 
   method <- "identify_file_impl"
@@ -69,4 +52,60 @@ identify_file_impl.rdata <- function (x, repo, ...) {
   # TODO what to do with possible multiple matches?
   ans <- unlist(lapply(ans, identify_object, repo = repo), recursive = FALSE)
   structure(ans, class = 'container')
+}
+
+#' @importFrom imager load.image
+identify_file_impl.jpg <- identify_file_impl.png <- function (x, repo, ...) {
+  identify_plot(load.image(x$path), repo)
+}
+
+
+#' @importFrom rlang UQ
+#' @export
+identify_object <- function (obj, repo) {
+  id <- storage::compute_id(obj)
+  q  <- as_artifacts(repo) %>% filter(id == UQ(id))
+
+  ans <- q %>% summarise(n = n()) %>% first
+
+  if (!ans) {
+    warn("cannot match object in repository")
+    return(NULL)
+  }
+
+  read_artifacts(q)
+}
+
+
+#' @importFrom png readPNG
+#' @importFrom jsonlite base64_dec
+#' @importFrom imager is.cimg width height
+#' @importFrom magrittr %>%
+identify_plot <- function (img, repo) {
+  stopifnot(is.cimg(img))
+  stopifnot(is_repository(repo))
+
+  h <- height(img)
+  w <- width(img)
+
+  dir_path <- file.path(tempdir(), paste0(w, 'x', h))
+  stopifnot(dir.exists(dir_path) || dir.create(dir_path, showWarnings = FALSE, recursive = TRUE))
+
+  arts <- as_artifacts(repo) %>% filter('plot' %in% class) %>% read_artifacts
+
+  known <- arts %>% lapply(function (a) {
+    path <- file.path(dir_path, paste0(shorten(a$id), '.png'))
+    if (!file.exists(path)) {
+      png(path, w, h)
+      replot(a)
+      dev.off()
+    }
+    load.image(path) %>% unwrap_image(0.01, 1)
+  })
+
+  new <- unwrap_image(img, 0.01, 1)
+  dists <- map_dbl(known, function (known) image_dist(known, new))
+  i <- which.min(dists)
+
+  nth(arts, i)
 }

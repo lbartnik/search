@@ -12,6 +12,8 @@ Encoding: UTF-8
 Imports:
     glue,
     imager,
+    jsonlite,
+    png,
     repository,
     rlang,
     utilities
@@ -19,6 +21,7 @@ Suggests:
   knitr,
   testthat
 Collate:
+  'distmatrix.R'
   'identify.R'
   'images.R'
   'search.R'

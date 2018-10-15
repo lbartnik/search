@@ -10,78 +10,35 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-library(imager)
-library(jsonlite)
 library(grid)
-library(png)
 library(repository)
 library(search)
-library(storage)
 library(utilities)
 library(knitr)
 
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(knitr.kable.NA = '')
 ```
 
-```{r images,echo=FALSE,cache=TRUE}
-prepare_png <- function (raw_png, file_name) {
-  if (length(dim(raw_png)) == 3) {
-      dim(raw_png) <- c(dim(raw_png)[1:2], 1, dim(raw_png)[3])
-    } else {
-      dim(raw_png) <- c(dim(raw_png), 1, 1)
-    }
-    img <- cimg(raw_png) %>% mirror("x") %>% imrotate(-90)
-    
-    tmp_path <- file.path(tempdir(), paste0(file_name, '_min.png'))
-    save.image(resize(img, 50, 50), tmp_path)
-
-    list(path = tmp_path, image = img)
-}
-
-dump_plots <- function (repo) {
-  arts <- as_artifacts(repo) %>% filter('plot' %in% class) %>% read_artifacts
-  ans  <- arts %>% lapply(function (a) {
-    prepare_png(readPNG(base64_dec(artifact_data(a)$png)), shorten(a$id))
-  })
-  names(ans) <- shorten(map_chr(arts, `[[`, 'id'))
-  ans
-}
-
-images <- c(list(roc = prepare_png(readPNG('../tests/testthat/roc.png'), 'roc')),
-            dump_plots(iris_models()), dump_plots(london_meters()))
+```{r images,cache=TRUE}
+imgs <- bind_images('../tests/testthat/roc.png', iris_models(), london_meters())
+dist <- compute_matrix(imgs)
+path <- imap(imgs, create_miniature)
+rownames(dist) <- colnames(dist) <- sprintf("![](%s)", path)
 ```
 
-```{r eval=FALSE}
-images <- c(read_png('tests/testthat/roc.png'), read_pngs(iris_models()),
-            read_pngs(london_meters()))
-```
-
-```{r dists,cache=TRUE}
-unwrapped <- lapply(images, function (img) unwrap_image(img$image, 0.01, 1))
-dists <- combn(unwrapped, 2, function(pair) image_dist(first(pair), second(pair)))
-```
 
 ```{r results='asis',echo=FALSE}
-distm <- matrix("", length(unwrapped), length(unwrapped))
-
-hide <- apply(rbind(combn(seq(length(unwrapped)), 2), dists), 2, function (x) {
-  distm[x[1], x[2]] <<- round(x[3], 2)
-})
-
-diag(distm) <- "0.0"
-
-distm <- as.data.frame(distm)
-rownames(distm) <- names(distm) <- sprintf("![](%s)", map_chr(images, `[[`, 'path'))
-kable(distm)
+kable(dist / 628, digits = 2)
 ```
 
 
 Searching for match for `roc` (image 1) - should return `0f1105f2` (image 2).
 
 ```{r echo=FALSE,comment='ROC'}
-grid.raster(images$roc$image)
+grid.raster(imgs$roc)
 ```
 ```{r echo=FALSE}
-grid.raster(images$`0f1105f2`$image)
+grid.raster(imgs$`0f1105f2`)
 ```
 

@@ -30,3 +30,10 @@ test_that("can identify RData", {
   expect_equal(artifact_data(first(x)), iris)
 })
 
+test_that("can identify plot", {
+  p <- load.image('roc.png')
+  a <- identify_plot(p, iris_models())
+
+  expect_true(is_artifact(a))
+  expect_equal(a$id, '0f1105f2e5992669196384b0a66536ef7dfc4111')
+})
