@@ -14,7 +14,7 @@ if (FALSE) {
 }
 
 if (FALSE) {
-  x <- unwrap_image(load.image("tests/testthat/roc.png"), 0.01, 1)
+  x <- unwrap_image(load.image("tests/testthat/roc-linux.png"), 0.01, 1)
 
   r <- sample_repository()
   a <- unwrap_image(load_plot(r, '0f1105f2e5992669196384b0a66536ef7dfc4111')$image, 0.01, 1)

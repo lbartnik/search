@@ -58,3 +58,14 @@ test_that("cdf vs ecdf", {
 
   expect_equal(cdf_area(x, y), exp)
 })
+
+test_that("image similarity", {
+  imgs <- bind_images('roc-linux.png', 'roc-windows.png', 'blank.png')
+
+  expect_true(all(map_dbl(imgs, width) == 800))
+  expect_true(all(map_dbl(imgs, height) == 600))
+
+  m <- compute_matrix(imgs)
+  expect_lt(m[1,2], m[1,3])
+  expect_lt(m[1,2], m[2,3])
+})

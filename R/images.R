@@ -69,7 +69,7 @@ unwrap_array <- function (x, dAlpha = 1, dR = 1, rMax = NULL, missing = 0) {
 #'
 #' @examples
 #' \dontrun{
-#'   exp <- load.image('roc.png')
+#'   exp <- load.image('roc-linux.png')
 #'   img <- load.image('test.png')
 #'   image_dist(unwrap_image(test), unwrap_image(exp))
 #' }

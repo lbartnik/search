@@ -43,7 +43,7 @@ For optimal results images should be always \emph{unwrapped}; see
 }
 \examples{
 \dontrun{
-  exp <- load.image('roc.png')
+  exp <- load.image('roc-linux.png')
   img <- load.image('test.png')
   image_dist(unwrap_image(test), unwrap_image(exp))
 }

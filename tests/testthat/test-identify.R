@@ -31,7 +31,7 @@ test_that("can identify RData", {
 })
 
 test_that("can identify plot", {
-  p <- load.image('roc.png')
+  p <- load.image('roc-linux.png')
   a <- identify_plot(p, iris_models())
 
   expect_true(is_artifact(a))

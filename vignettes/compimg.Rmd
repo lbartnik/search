@@ -21,7 +21,8 @@ options(knitr.kable.NA = '')
 ```
 
 ```{r images,cache=TRUE}
-imgs <- bind_images('../tests/testthat/roc.png', iris_models(), london_meters())
+imgs <- bind_images('../tests/testthat/roc-linux.png', '../tests/testthat/roc-windows.png',
+                    iris_models(), london_meters())
 dist <- compute_matrix(imgs)
 path <- imap(imgs, create_miniature)
 rownames(dist) <- colnames(dist) <- sprintf("![](%s)", path)
