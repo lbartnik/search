@@ -56,7 +56,7 @@ identify_file_impl.rdata <- function (x, repo, ...) {
 
 #' @importFrom imager load.image
 identify_file_impl.jpg <- identify_file_impl.png <- function (x, repo, ...) {
-  identify_plot(load.image(x$path), repo)
+  as_container(list(identify_plot(load.image(x$path), repo)))
 }
 
 
