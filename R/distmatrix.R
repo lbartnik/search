@@ -59,7 +59,7 @@ dump_repository <- function (repo) {
     read_artifacts
 
   cimgs <- lapply(arts, function (a) as.cimg(to_png(a)))
-  names(cimgs) <- shorten(map_chr(arts, `[[`, 'id'))
+  names(cimgs) <- toString(map_chr(arts, `[[`, 'id'))
   cimgs
 }
 

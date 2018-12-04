@@ -60,7 +60,7 @@ if (FALSE) {
 if (FALSE) {
   s <- london_meters()
   as_artifacts(s) %>% filter('plot' %in% class) %>% read_artifacts %>% lapply(function (a) {
-    file.copy(load_plot(s, a$id)$path, file.path('work', paste0(storage::shorten(a$id), '.png')))
+    file.copy(load_plot(s, a$id)$path, file.path('work', paste0(toString(a$id), '.png')))
   })
 }
 

@@ -94,7 +94,7 @@ identify_plot <- function (img, repo) {
   arts <- as_artifacts(repo) %>% filter('plot' %in% class) %>% read_artifacts
 
   known <- arts %>% lapply(function (a) {
-    path <- file.path(dir_path, paste0(shorten(a$id), '.png'))
+    path <- file.path(dir_path, paste0(toString(a$id), '.png'))
     if (!file.exists(path)) {
       png(path, w, h)
       replot(a)
