@@ -24,7 +24,7 @@ followed by computing the proper distance.
 \details{
 During the preparation, each image is first turned into scale of
 grays with \link[imager:grayscale]{imager::grayscale}. Then, gradient of color changes is
-computed for each image as \code{imgradient(i, 'xy')} (see \link[images:imgradient]{images::imgradient}).
+computed for each image as \code{imgradient(i, 'xy')} (see \link[imager:imgradient]{imager::imgradient}).
 Only gradients larger than \code{quantile(gradient, cutoff)} are kept.
 
 In the second phase, images are matched column-wise, creating pairs

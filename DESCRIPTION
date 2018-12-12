@@ -5,7 +5,7 @@ Version: 0.1.0
 Authors@R: person("Lukasz", "Bartnik", email = "l.bartnik@gmail.com", role = c("aut", "cre"))
 Description: Matches the contents of a file against a repository of
     artifacts. Provides the context in which the while was created.
-License: GPL v3
+License: GPL-3 + file LICENSE
 URL: https://github.com/lbartnik/search
 BugReports: https://github.com/lbartnik/search/issues
 Imports:
@@ -14,6 +14,7 @@ Imports:
   png,
   repository,
   rlang,
+  storage,
   utilities
 Suggests:
   imager,
@@ -27,6 +28,7 @@ Collate:
   'utils.R'
 Remotes:
   lbartnik/repository,
+  lbartnik/storage,
   lbartnik/utilities
 VignetteBuilder: knitr
 Encoding: UTF-8

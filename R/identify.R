@@ -1,3 +1,11 @@
+#' Identify artifact(s) matching a given file.
+#'
+#' @param path file path.
+#' @param repo a [repository::repository] object.
+#' @return artifact(s) matching contents of `path`.
+#'
+#' @seealso identify_object
+#'
 #' @export
 identify_file <- function (path, repo) {
   stopifnot(file.exists(path))
@@ -60,8 +68,16 @@ identify_file_impl.jpg <- identify_file_impl.png <- function (x, repo, ...) {
 }
 
 
-#' @importFrom rlang UQ
+#' Identify artifact(s) matching a given R object.
+#'
+#' @param obj any R object.
+#' @param repo a [repository::repository] object.
+#' @return artifact(s) matching `obj`.
+#'
+#' @seealso identify_file
+#'
 #' @export
+#' @importFrom rlang UQ
 identify_object <- function (obj, repo) {
   id <- storage::compute_id(obj)
   q  <- as_artifacts(repo) %>% filter(id == UQ(id))
@@ -79,7 +95,7 @@ identify_object <- function (obj, repo) {
 
 #' @importFrom png readPNG
 #' @importFrom jsonlite base64_dec
-#' @importFrom magrittr %>%
+#' @importFrom grDevices png dev.off
 identify_plot <- function (img, repo) {
   stop_if_no_imager()
 

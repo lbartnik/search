@@ -1,2 +1,1 @@
 OBJECTS=lib.o
-PKG_CFLAGS=-ggdb -O0

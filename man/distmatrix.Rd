@@ -13,6 +13,15 @@ compute_matrix(images)
 
 create_miniature(x, unique_id)
 }
+\arguments{
+\item{...}{objects to extract images from.}
+
+\item{images}{a list of \link[imager:cimg]{imager::cimg} objects.}
+
+\item{x}{a \link[imager:cimg]{imager::cimg} object.}
+
+\item{unique_id}{an unique string used to create a file name for \code{x}.}
+}
 \description{
 Computing image distance matrix.
 }

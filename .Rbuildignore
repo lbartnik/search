@@ -2,3 +2,6 @@
 ^\.Rproj\.user$
 
 ^work.R$
+
+.travis.yml
+appveyor.yml

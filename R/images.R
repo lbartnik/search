@@ -43,7 +43,7 @@ unwrap_array <- function (x, dAlpha = 1, dR = 1, rMax = NULL, missing = 0) {
 #'
 #' During the preparation, each image is first turned into scale of
 #' grays with [imager::grayscale]. Then, gradient of color changes is
-#' computed for each image as `imgradient(i, 'xy')` (see [images::imgradient]).
+#' computed for each image as `imgradient(i, 'xy')` (see [imager::imgradient]).
 #' Only gradients larger than `quantile(gradient, cutoff)` are kept.
 #'
 #' In the second phase, images are matched column-wise, creating pairs

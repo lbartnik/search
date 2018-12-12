@@ -1,0 +1,23 @@
+language: r
+cache: packages
+sudo: false
+r_build_args: --no-build-vignettes
+r_check_args: --no-manual --timings --no-build-vignettes
+matrix:
+  include:
+    - os: linux
+      r: release
+    - os: linux
+      r: devel
+r_packages:
+  - imager
+  - covr
+r_github_packages:
+  - lbartnik/storage
+  - lbartnik/repository
+  - lbartnik/utilities
+
+# Only report coverage for the release version
+after_success:
+  - test $TRAVIS_R_VERSION_STRING = 'release' && Rscript -e 'covr::codecov()'
+

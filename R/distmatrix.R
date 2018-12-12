@@ -5,6 +5,8 @@
 NULL
 
 
+#' @param ... objects to extract images from.
+#'
 #' @importFrom rlang is_character
 #' @export
 #' @rdname distmatrix
@@ -32,9 +34,11 @@ bind_images <- function (...) {
 }
 
 
+#' @param images a list of [imager::cimg] objects.
 #' @export
-#'
 #' @rdname distmatrix
+#'
+#' @importFrom utils combn
 compute_matrix <- function (images) {
   unwrapped <- lapply(images, function (img) unwrap_image(img, 0.01, 1))
   dists <- combn(unwrapped, 2, function(pair) image_dist(first(pair), second(pair), .95))
@@ -94,8 +98,10 @@ read_png <- function (x) {
 }
 
 
-#' @export
+#' @param x a [imager::cimg] object.
+#' @param unique_id an unique string used to create a file name for `x`.
 #'
+#' @export
 #' @rdname distmatrix
 create_miniature <- function (x, unique_id) {
   stopifnot(imager::is.cimg(x))
