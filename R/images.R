@@ -16,15 +16,16 @@
 #' @param dR Step for the distance `r`.
 #' @param missing The value for pixels outside of `x`.
 #'
-#' @importFrom imager as.cimg is.cimg grayscale squeeze
 #' @export
 unwrap_image <- function (x, dAlpha = 1, dR = 1, missing = 1) {
-  stopifnot(is.cimg(x))
-  a <- as.array(squeeze(grayscale(x)))
+  stopifnot(imager::is.cimg(x))
+  stop_if_no_imager()
+
+  a <- as.array(imager::squeeze(imager::grayscale(x)))
   o <- unwrap_array(a, dAlpha, dR, missing = missing)
   # rotate 90 deg counter-clockwise
   o <- t(apply(o, 2, rev))
-  as.cimg(o)
+  imager::as.cimg(o)
 }
 
 unwrap_array <- function (x, dAlpha = 1, dR = 1, rMax = NULL, missing = 0) {
@@ -64,7 +65,6 @@ unwrap_array <- function (x, dAlpha = 1, dR = 1, rMax = NULL, missing = 0) {
 #' @param cutoff The cut-off quantile for gradient values.
 #' @return Cumulative area between _ecdf_s for all pairs of columns.
 #'
-#' @importFrom imager is.cimg grayscale squeeze enorm imgradient cannyEdges
 #' @export
 #'
 #' @examples
@@ -74,16 +74,17 @@ unwrap_array <- function (x, dAlpha = 1, dR = 1, rMax = NULL, missing = 0) {
 #'   image_dist(unwrap_image(test), unwrap_image(exp))
 #' }
 image_dist <- function (a, b, cutoff = .5) {
-  stopifnot(is.cimg(a), is.cimg(b))
+  stopifnot(imager::is.cimg(a), imager::is.cimg(b))
+  stop_if_no_imager()
 
   as_grayscale <- function (img) {
     if (identical(last(dim(img)), 1L)) return(img)
-    squeeze(grayscale(img))
+    imager::squeeze(imager::grayscale(img))
   }
 
   to_distances <- function (x) {
     # only edges are interesting
-    x <- as_grayscale(x) %>% imgradient("xy") %>% enorm %>% cannyEdges %>% as.array
+    x <- as_grayscale(x) %>% imager::imgradient("xy") %>% imager::enorm() %>% imager::cannyEdges() %>% as.array
     # account for varying number of rows (distance in polar coordinates)
     apply(x, 1, function (c) which(c)/max(c))
   }

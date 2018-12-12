@@ -54,9 +54,9 @@ identify_file_impl.rdata <- function (x, repo, ...) {
   structure(ans, class = 'container')
 }
 
-#' @importFrom imager load.image
 identify_file_impl.jpg <- identify_file_impl.png <- function (x, repo, ...) {
-  as_container(list(identify_plot(load.image(x$path), repo)))
+  stop_if_no_imager()
+  as_container(list(identify_plot(imager::load.image(x$path), repo)))
 }
 
 
@@ -79,14 +79,15 @@ identify_object <- function (obj, repo) {
 
 #' @importFrom png readPNG
 #' @importFrom jsonlite base64_dec
-#' @importFrom imager is.cimg width height
 #' @importFrom magrittr %>%
 identify_plot <- function (img, repo) {
-  stopifnot(is.cimg(img))
+  stop_if_no_imager()
+
+  stopifnot(imager::is.cimg(img))
   stopifnot(is_repository(repo))
 
-  h <- height(img)
-  w <- width(img)
+  h <- imager::height(img)
+  w <- imager::width(img)
 
   dir_path <- file.path(tempdir(), paste0(w, 'x', h))
   stopifnot(dir.exists(dir_path) || dir.create(dir_path, showWarnings = FALSE, recursive = TRUE))
@@ -100,7 +101,7 @@ identify_plot <- function (img, repo) {
       replot(a)
       dev.off()
     }
-    load.image(path) %>% unwrap_image(0.01, 1)
+    imager::load.image(path) %>% unwrap_image(0.01, 1)
   })
 
   new <- unwrap_image(img, 0.01, 1)

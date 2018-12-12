@@ -22,7 +22,7 @@ bind_images <- function (...) {
       return(dump_repository(item))
     }
     if (is_character(item) && all(file.exists(item))) {
-      imgs <- lapply(item, function (file) as.cimg(read_png(file)))
+      imgs <- lapply(item, function (file) imager::as.cimg(read_png(file)))
       names(imgs) <- basename(item)
       return(imgs)
     }
@@ -52,27 +52,29 @@ compute_matrix <- function (images) {
 }
 
 
-#' @importFrom imager as.cimg
 dump_repository <- function (repo) {
+  stop_if_no_imager()
+
   arts <- as_artifacts(repo) %>%
     filter('plot' %in% class) %>%
     read_artifacts
 
-  cimgs <- lapply(arts, function (a) as.cimg(to_png(a)))
-  names(cimgs) <- toString(map_chr(arts, `[[`, 'id'))
+  cimgs <- lapply(arts, function (a) imager::as.cimg(to_png(a)))
+  names(cimgs) <- map_chr(arts, function(x)toString(nth(x, 'id')))
   cimgs
 }
 
 
-#' @importFrom imager save.image mirror imrotate cimg resize
 #' @importFrom tools file_path_sans_ext
 as.cimg.png <- function (raw_png) {
+  stop_if_no_imager()
+
   if (length(dim(raw_png)) == 3) {
     dim(raw_png) <- c(dim(raw_png)[1:2], 1, dim(raw_png)[3])
   } else {
     dim(raw_png) <- c(dim(raw_png), 1, 1)
   }
-  cimg(raw_png) %>% mirror("x") %>% imrotate(-90)
+  imager::cimg(raw_png) %>% imager::mirror("x") %>% imager::imrotate(-90)
 }
 
 
@@ -93,14 +95,13 @@ read_png <- function (x) {
 
 
 #' @export
-#' @importFrom imager is.cimg resize save.image
 #'
 #' @rdname distmatrix
 create_miniature <- function (x, unique_id) {
-  stopifnot(is.cimg(x))
+  stopifnot(imager::is.cimg(x))
 
   tmp_path <- file.path(tempdir(), paste0(unique_id, '.png'))
-  save.image(resize(x, 50, 50), tmp_path)
+  imager::save.image(imager::resize(x, 50, 50), tmp_path)
 
   tmp_path
 }
