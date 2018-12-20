@@ -29,9 +29,8 @@ unwrap_image <- function (x, dAlpha = 1, dR = 1, missing = 1) {
 }
 
 unwrap_array <- function (x, dAlpha = 1, dR = 1, rMax = NULL, missing = 0) {
-  stopifnot(is.array(x), is.numeric(x))
-  rMax <- ceiling(sqrt(sum((dim(x)/2)**2)))
-  .Call("C_unwrap_array", x, as.numeric(dAlpha), as.numeric(rMax), as.numeric(dR), as.numeric(missing))
+  if (is.null(rMax)) rMax <- ceiling(sqrt(sum((dim(x)/2)**2)))
+  unwrap_array_impl(x, as.numeric(dAlpha), as.numeric(rMax), as.numeric(dR), as.numeric(missing))
 }
 
 
@@ -91,13 +90,4 @@ image_dist <- function (a, b, cutoff = .5) {
 
   diffs <- Map(cdf_area, to_distances(a), to_distances(b))
   sum(unlist(diffs))
-}
-
-
-cdf_area <- function (x, y) {
-  .Call("C_cdf_area", sort(as.numeric(x)), sort(as.numeric(y)))
-}
-
-cdf_max <- function (x, y) {
-  .Call("C_cdf_max", sort(as.numeric(x)), sort(as.numeric(y)))
 }

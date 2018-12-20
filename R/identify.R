@@ -1,24 +1,81 @@
-#' Identify artifact(s) matching a given file.
+#' Identify artifacts by a variety of means.
+#'
+#' @param repo a [repository::repository] object.
+#' @return Each function returns a `list` of artifacts (see
+#'         [repository::new_artifact]) wrapped in a [utilities::as_container].
+#'
+#' @name identify-artifacts
+#' @rdname identify_artifacts
+NULL
+
+#' @description `identify_file` finds artifacts matching the contents of
+#' a given file: plot, data set (`csv`) or an R object (`rds` or `RData`).
 #'
 #' @param path file path.
-#' @param repo a [repository::repository] object.
-#' @return artifact(s) matching contents of `path`.
-#'
-#' @seealso identify_object
 #'
 #' @export
+#' @rdname identify_artifacts
 identify_file <- function (path, repo) {
   stopifnot(file.exists(path))
 
   file <- new_file(path)
   identify_file_impl(file, repo)
-
-  # TODO check file type
-  #  1. if R data, try matching R objects
-  #  2. if a plot, try matching a plot
-  #  3. if csv, try matching data frames
-  #  4. if none, probably fail
 }
+
+
+#' @description `identify_object` finds artifacts matching a given R object.
+#' @param obj any R object.
+#'
+#' @export
+#' @importFrom rlang UQ
+#' @rdname identify_artifacts
+identify_object <- function (obj, repo) {
+  id <- storage::compute_id(obj)
+  q  <- as_artifacts(repo) %>% filter(id == UQ(id))
+
+  ans <- q %>% summarise(n = n()) %>% first
+
+  if (!ans) {
+    warn("cannot match object in repository")
+    return(NULL)
+  }
+
+  read_artifacts(q)
+}
+
+
+#' @description `identify_expression` finds artifacts created with an
+#' expression matching the one passed as argument. Each artifact is
+#' assigned an additional attribute, `dist`, which holds the edit
+#' distance to the expression `expr`.
+#'
+#' @param expr expression to match against; as returned by [base::bquote] or
+#'        [base::deparse].
+#' @param n return that many closest matches given the edit distance (see
+#'        [edit_dist]).
+#'
+#' @export
+#' @rdname identify_artifacts
+#' @importFrom utils head
+identify_expression <- function (expr, repo, n = 3) {
+  expr <- tokenize(expr)
+
+  artf <- as_artifacts(repo) %>% read_artifacts
+  dist <- map_dbl(artf, function (a) edit_dist(expr, tokenize(a$expression)))
+  fnd  <- head(order(dist, decreasing = FALSE), n)
+
+  artf <- lapply(fnd, function (i) {
+    a <- artf[[i]]
+    a$dist <- dist[[i]]
+    a
+  })
+
+  # TODO here maybe something smart? like, the first n artifacts that are
+  #      also distinct given the distribution of dinstances?
+
+  as_container(artf)
+}
+
 
 
 #' @importFrom tools file_ext
@@ -59,39 +116,13 @@ identify_file_impl.rdata <- function (x, repo, ...) {
 
   # TODO what to do with possible multiple matches?
   ans <- unlist(lapply(ans, identify_object, repo = repo), recursive = FALSE)
-  structure(ans, class = 'container')
+  as_container(ans)
 }
 
 identify_file_impl.jpg <- identify_file_impl.png <- function (x, repo, ...) {
   stop_if_no_imager()
   as_container(list(identify_plot(imager::load.image(x$path), repo)))
 }
-
-
-#' Identify artifact(s) matching a given R object.
-#'
-#' @param obj any R object.
-#' @param repo a [repository::repository] object.
-#' @return artifact(s) matching `obj`.
-#'
-#' @seealso identify_file
-#'
-#' @export
-#' @importFrom rlang UQ
-identify_object <- function (obj, repo) {
-  id <- storage::compute_id(obj)
-  q  <- as_artifacts(repo) %>% filter(id == UQ(id))
-
-  ans <- q %>% summarise(n = n()) %>% first
-
-  if (!ans) {
-    warn("cannot match object in repository")
-    return(NULL)
-  }
-
-  read_artifacts(q)
-}
-
 
 #' @importFrom png readPNG
 #' @importFrom jsonlite base64_dec

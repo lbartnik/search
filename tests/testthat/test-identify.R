@@ -35,5 +35,15 @@ test_that("can identify plot", {
   a <- identify_plot(p, iris_model())
 
   expect_true(is_artifact(a))
-  expect_equal(unclass(a$id), '0f1105f2e5992669196384b0a66536ef7dfc4111')
+  expect_equal(toString(a$id), '0f1105f2')
+})
+
+test_that("can identify expression", {
+  x <- identify_expression("virginica$predict <- predict(m, virginica)", iris_model())
+  expect_length(x, 3)
+  expect_s3_class(x, 'container')
+
+  x <- first(x)
+  expect_equal(toString(x$id), "3b9c6d54")
+  expect_equal(x$dist, 0)
 })

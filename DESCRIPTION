@@ -9,6 +9,7 @@ License: GPL-3 + file LICENSE
 URL: https://github.com/lbartnik/search
 BugReports: https://github.com/lbartnik/search/issues
 Imports:
+  Rcpp,
   glue,
   jsonlite,
   png,
@@ -17,20 +18,25 @@ Imports:
   storage,
   utilities
 Suggests:
+  sourcetools,
   imager,
   knitr,
   testthat
 Collate:
+  'RcppExports.R'
   'distmatrix.R'
   'identify.R'
   'images.R'
   'search.R'
+  'tokenizer.R'
   'utils.R'
 Remotes:
   lbartnik/repository,
   lbartnik/storage,
-  lbartnik/utilities
+  lbartnik/utilities,
+  kevinushey/sourcetools
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Roxygen: list(markdown = TRUE)
+LinkingTo: Rcpp
