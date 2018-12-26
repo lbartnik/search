@@ -13,7 +13,11 @@ cdf_max <- function(a, b) {
     .Call(`_search_cdf_max`, a, b)
 }
 
-edit_dist_impl <- function(x, y) {
-    .Call(`_search_edit_dist_impl`, x, y)
+#' @param a tokenized R expression; output of `tokenize()`.
+#' @param b tokenized R expression; output of `tokenize()`.
+#'
+#' @rdname edit_dist
+edit_dist <- function(a, b) {
+    .Call(`_search_edit_dist`, a, b)
 }
 

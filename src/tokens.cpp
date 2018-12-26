@@ -35,8 +35,16 @@ struct EditDist {
   }
 };
 
+//' @param a tokenized R expression; output of `tokenize()`.
+//' @param b tokenized R expression; output of `tokenize()`.
+//'
+//' @rdname edit_dist
 // [[Rcpp::export]]
-size_t edit_dist_impl (const CharacterVector & x, const CharacterVector & y) {
-  EditDist ed(x, y);
+size_t edit_dist (const CharacterVector & a, const CharacterVector & b) {
+  if (!a.inherits("tokens") || !b.inherits("tokens")) {
+    stop("both arguments to edit_dist must be values returned from `tokenize`");
+  }
+
+  EditDist ed(a, b);
   return ed.compute_dist();
 }

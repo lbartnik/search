@@ -38,6 +38,20 @@ test_that("can identify plot", {
   expect_equal(toString(a$id), '0f1105f2')
 })
 
+test_that("tokenize expression", {
+  expect_equal(tokenize(parse(text = "x <- 1")), as_tokens(c("x", "<-", "1")))
+})
+
+test_that("tokenize multi-line", {
+  # nothing special
+  expect_equal(tokenize("x <-\n1"), as_tokens(c("x", "<-", "1")))
+
+  # deparse has a width.cutoff parameter which splits long expressions into
+  # multiple lines; this one falls into that category
+  text <- "x <- x %>% mutate(Sepal.Area = Sepal.Length * Sepal.Width, Petal.Area = Petal.Length * Petal.Width)"
+  expect_length(tokenize(parse(text = text)), 18)
+})
+
 test_that("can identify expression", {
   x <- identify_expression("virginica$predict <- predict(m, virginica)", iris_model())
   expect_length(x, 3)

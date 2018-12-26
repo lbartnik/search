@@ -24,11 +24,11 @@ Suggests:
   testthat
 Collate:
   'RcppExports.R'
+  'annotate.R'
   'distmatrix.R'
   'identify.R'
   'images.R'
   'search.R'
-  'tokenizer.R'
   'utils.R'
 Remotes:
   lbartnik/repository,
